@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matematika Testi - Sherali</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Konfetti animatsiyasi uchun kutubxona -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -14,7 +16,6 @@
         }
 
         body {
-            /* iPhone uslubidagi suyuq va jozibali rangli fon (Liquid Gradient) */
             background: linear-gradient(135deg, #43cbff 0%, #7038ff 50%, #ff3870 100%);
             background-size: 200% 200%;
             animation: gradientBG 10s ease infinite;
@@ -34,7 +35,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Tepadagi yaratuvchi yozuvi (iPhone dinamik orolcha uslubida) */
         .top-badge {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(20px);
@@ -52,7 +52,6 @@
             text-align: center;
         }
 
-        /* Suyuq Shisha (Liquid Glassmorphism) Asosiy Karta */
         .card {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(25px);
@@ -123,7 +122,6 @@
             color: #fff;
         }
 
-        /* Tugmalar uchun "Bilqillash" (Spring / Bounce) effekti */
         @keyframes bounceEffect {
             0% { transform: scale(1); }
             30% { transform: scale(0.85) rotate(-2deg); }
@@ -157,13 +155,13 @@
         }
 
         .question-card {
-            font-size: 30px;
-            margin: 22px 0;
+            font-size: 26px;
+            margin: 15px 0;
             font-weight: 900;
             background: rgba(0, 0, 0, 0.2);
-            padding: 24px;
+            padding: 20px;
             border-radius: 20px;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #ffffff;
             text-shadow: 0 3px 10px rgba(0,0,0,0.2);
@@ -173,15 +171,15 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .option-btn {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.35);
-            padding: 18px;
+            padding: 16px;
             border-radius: 18px;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             color: white;
             cursor: pointer;
@@ -190,10 +188,22 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .option-btn:active {
-            transform: scale(0.85);
-            background: rgba(255, 255, 255, 0.5);
-            border-color: #ffffff;
+        .option-btn.correct {
+            background: rgba(40, 167, 69, 0.8) !important;
+            border-color: #28a745 !important;
+        }
+
+        .option-btn.wrong {
+            background: rgba(220, 53, 69, 0.8) !important;
+            border-color: #dc3545 !important;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+            min-height: 20px;
+            transition: opacity 0.3s;
         }
 
         .hidden {
@@ -209,7 +219,6 @@
             font-weight: 700;
         }
 
-        /* Pastdagi footer yozuvi */
         .footer-brand {
             font-size: 11px;
             font-weight: 900;
@@ -223,12 +232,10 @@
 </head>
 <body>
 
-    <!-- Tepadagi yaratuvchi yozuvi -->
     <div class="top-badge">
         ✨ Bot Created by Shodiyorov Sherali
     </div>
 
-    <!-- Asosiy oyna (Ro'yxatdan o'tish) -->
     <div class="card" id="register-screen">
         <h2>Matematika Testi</h2>
         <div class="input-group">
@@ -238,16 +245,15 @@
         <div class="input-group">
             <label>Sinfingiz:</label>
             <select id="grade">
-                <option value="1">1-sinf (Oson)</option>
-                <option value="2">2-sinf (O'rta)</option>
-                <option value="3">3-sinf (Qiyinroq)</option>
-                <option value="4">4-sinf (Murakkab)</option>
+                <option value="1">1-sinf (20 ta savol)</option>
+                <option value="2">2-sinf (25 ta savol)</option>
+                <option value="3">3-sinf (35 ta savol)</option>
+                <option value="4">4-sinf (40 ta savol)</option>
             </select>
         </div>
         <button class="btn" onclick="triggerBounce(this); startTest()">Testni Boshlash 🚀</button>
     </div>
 
-    <!-- Test oynasi -->
     <div class="card hidden" id="quiz-screen">
         <div class="info-header">
             <span id="user-info"></span>
@@ -255,16 +261,15 @@
         </div>
         <div class="question-card" id="question-text">0 + 0 = ?</div>
         <div class="options-grid" id="options-container"></div>
+        <div class="feedback-text" id="feedback-msg"></div>
     </div>
 
-    <!-- Natija oynasi -->
     <div class="card hidden" id="result-screen">
         <h2>🏆 Natijangiz</h2>
-        <p id="final-score" style="font-size: 16px; margin: 20px 0; line-height: 1.6;"></p>
+        <p id="final-score" style="font-size: 15px; margin: 15px 0; line-height: 1.5;"></p>
         <button class="btn" onclick="triggerBounce(this); restartTest()">Qaytadan 🔄</button>
     </div>
 
-    <!-- Pastdagi footer yozuvi -->
     <div class="footer-brand">
         POWERED BY SHERALI
     </div>
@@ -274,10 +279,10 @@
         let userGrade = 1;
         let currentQuestion = 0;
         let score = 0;
-        const totalQuestions = 5;
+        let totalQuestions = 20;
         let correctAnswer = 0;
+        let isAnswered = false;
 
-        // Tugma bosilganda bilqillash (bouncing) animatsiyasini qo'shish
         function triggerBounce(element) {
             element.classList.add("bouncing");
             setTimeout(() => {
@@ -294,6 +299,15 @@
             userName = name;
             userGrade = parseInt(document.getElementById("grade").value);
 
+            // Sinfga qarab savollar sonini belgilash
+            if (userGrade === 1) totalQuestions = 20;
+            else if (userGrade === 2) totalQuestions = 25;
+            else if (userGrade === 3) totalQuestions = 35;
+            else if (userGrade === 4) totalQuestions = 40;
+
+            currentQuestion = 0;
+            score = 0;
+
             document.getElementById("register-screen").classList.add("hidden");
             document.getElementById("quiz-screen").classList.remove("hidden");
             document.getElementById("user-info").innerText = `${userName} (${userGrade}-sinf)`;
@@ -307,27 +321,27 @@
             op = ops[Math.floor(Math.random() * ops.length)];
 
             if (userGrade === 1) {
-                n1 = Math.floor(Math.random() * 10) + 1;
+                n1 = Math.floor(Math.random() * 15) + 3;
                 n2 = Math.floor(Math.random() * 10) + 1;
                 if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
             } else if (userGrade === 2) {
-                n1 = Math.floor(Math.random() * 20) + 5;
-                n2 = Math.floor(Math.random() * 15) + 1;
+                n1 = Math.floor(Math.random() * 30) + 10;
+                n2 = Math.floor(Math.random() * 20) + 2;
                 if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-                if (op === '*') { n1 = Math.floor(Math.random() * 9) + 1; n2 = Math.floor(Math.random() * 9) + 1; }
+                if (op === '*') { n1 = Math.floor(Math.random() * 9) + 2; n2 = Math.floor(Math.random() * 5) + 2; }
             } else if (userGrade === 3) {
-                n1 = Math.floor(Math.random() * 50) + 10;
-                n2 = Math.floor(Math.random() * 30) + 5;
+                n1 = Math.floor(Math.random() * 70) + 15;
+                n2 = Math.floor(Math.random() * 40) + 5;
                 if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-                if (op === '*') { n1 = Math.floor(Math.random() * 12) + 2; n2 = Math.floor(Math.random() * 10) + 2; }
+                if (op === '*') { n1 = Math.floor(Math.random() * 12) + 3; n2 = Math.floor(Math.random() * 10) + 2; }
             } else {
-                n1 = Math.floor(Math.random() * 90) + 10;
-                n2 = Math.floor(Math.random() * 50) + 10;
+                n1 = Math.floor(Math.random() * 150) + 20;
+                n2 = Math.floor(Math.random() * 80) + 10;
                 if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-                if (op === '*') { n1 = Math.floor(Math.random() * 15) + 5; n2 = Math.floor(Math.random() * 10) + 2; }
+                if (op === '*') { n1 = Math.floor(Math.random() * 20) + 5; n2 = Math.floor(Math.random() * 10) + 2; }
                 if (op === '/') { 
-                    n2 = Math.floor(Math.random() * 8) + 2;
-                    let m = Math.floor(Math.random() * 10) + 2;
+                    n2 = Math.floor(Math.random() * 9) + 2;
+                    let m = Math.floor(Math.random() * 12) + 2;
                     n1 = n2 * m;
                 }
             }
@@ -350,12 +364,14 @@
                 return;
             }
 
+            isAnswered = false;
             document.getElementById("progress").innerText = `${currentQuestion + 1}/${totalQuestions}`;
             document.getElementById("question-text").innerText = generateQuestion();
+            document.getElementById("feedback-msg").innerText = "";
 
             let options = [correctAnswer];
             while (options.length < 4) {
-                let wrong = correctAnswer + (Math.floor(Math.random() * 10) - 5);
+                let wrong = correctAnswer + (Math.floor(Math.random() * 12) - 6);
                 if (wrong !== correctAnswer && !options.includes(wrong) && wrong >= 0) {
                     options.push(wrong);
                 }
@@ -368,23 +384,64 @@
                 const btn = document.createElement("button");
                 btn.className = "option-btn";
                 btn.innerText = opt;
-                btn.onclick = (e) => {
-                    triggerBounce(e.target);
-                    setTimeout(() => {
-                        if (opt === correctAnswer) score++;
-                        currentQuestion++;
-                        loadQuestion();
-                    }, 200);
-                };
+                btn.onclick = (e) => checkAnswer(opt, e.target);
                 container.appendChild(btn);
             });
+        }
+
+        function checkAnswer(selected, btnElement) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const allButtons = document.querySelectorAll(".option-btn");
+            const feedback = document.getElementById("feedback-msg");
+
+            if (selected === correctAnswer) {
+                score++;
+                btnElement.classList.add("correct");
+                feedback.style.color = "#4cd137";
+                feedback.innerText = `Qoyil! Siz ${currentQuestion + 1}-savolga to'g'ri javob berdingiz, shunday davom eting! 👏`;
+            } else {
+                btnElement.classList.add("wrong");
+                feedback.style.color = "#ff4d4d";
+                feedback.innerText = `Siz noto'g'ri javob berdingiz! To'g'ri javob: ${correctAnswer}`;
+                
+                // To'g'ri tugmani ham yashil qilib ko'rsatish
+                allButtons.forEach(b => {
+                    if (parseInt(b.innerText) === correctAnswer) {
+                        b.classList.add("correct");
+                    }
+                });
+            }
+
+            currentQuestion++;
+            setTimeout(() => {
+                loadQuestion();
+            }, 1800);
         }
 
         function showResults() {
             document.getElementById("quiz-screen").classList.add("hidden");
             document.getElementById("result-screen").classList.remove("hidden");
             
-            let msg = `Barakalla, <b>${userName}</b>! Siz ${totalQuestions} ta savoldan <b>${score}</b> tasiga to'g'ri topdingiz. 🌟`;
+            // Ballarni hisoblash (har bir sinf uchun maksimal 20 ball)
+            let finalPoints = Math.round((score / totalQuestions) * 20);
+
+            // Konfetti otish
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+
+            let msg = `Siz shuncha ball to'pladingiz: <b>${finalPoints} / 20 ball</b><br>(${totalQuestions} ta savoldan ${score} tasiga to'g'ri topdingiz).<br><br>`;
+            
+            if (score >= totalQuestions * 0.8) {
+                msg += `🎉 Ajoyib natija! Matematika fanida juda zo'rsiz, shunday davom eting!`;
+            } else {
+                msg += `📖 Matematika fanida ko'proq shug'ullaning, yaxshiroq o'qing, albatta yanada yaxshi natija ko'rsatasiz! 💪`;
+            }
+
             document.getElementById("final-score").innerHTML = msg;
         }
 
